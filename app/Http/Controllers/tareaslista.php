@@ -14,6 +14,10 @@ class tareaslista extends Controller
     public function index()
     {
         //
+        // Original -> return tasca::all();
+        $tasca = tasca::all();
+        return view('todo.index')->with('todos',$tasca);
+
     }
 
     /**
@@ -21,18 +25,15 @@ class tareaslista extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create(Request $request)
+    public function create()
     {
-        $task = new task();
-
-        $task -> objetivo = $request -> objetivo;
-        $task -> fecha = $request -> fecha;
-        $task -> usuario = $request -> usuario;
-        $task -> estado = $request -> estado;
-
-        $task -> save();
-
-        return redirect('/tareas');
+        //
+        //$users = Auth::user();
+        if(Auth::user()){
+        return view('todo.add');
+        } else {
+        return redirect('tasques/') ;
+        }
     }
 
     /**
@@ -44,6 +45,8 @@ class tareaslista extends Controller
     public function store(Request $request)
     {
         //
+        $tasca = tasca::create(Request::all());
+        return redirect('tasques/'.$tasca->id);
     }
 
     /**
@@ -55,6 +58,15 @@ class tareaslista extends Controller
     public function show($id)
     {
         //
+        $tasca = tasca::find($id);
+        if($tasca == null){
+            return redirect('tasques/');
+        }
+        $user = Auth::user();
+        if($user == null){
+            return view('todo.show')->with('todo',$tasca);
+        }
+        return view('todo.show')->with('todo',$tasca)->with('user',$user);
     }
 
     /**
@@ -65,7 +77,20 @@ class tareaslista extends Controller
      */
     public function edit($id)
     {
-        //
+        //tasca
+        if(Auth::user()){
+            $tasca = tasca::find($id);
+            $user = Auth::user();
+            if($tasca == null){
+                return redirect('tasques/');
+            } else if($user->name == $tasca->propietari){
+                return view('todo.edit')->with('todo',$tasca);
+            } else {
+                return redirect('tasques/');
+            }
+        } else {
+        return redirect('tasques/');
+        }
     }
 
     /**
@@ -75,9 +100,15 @@ class tareaslista extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update($id)
     {
         //
+        //$llibre = llibres\Llibre::find($id)->update(Request::all());
+        //$tasca->update(Request::all());
+        $tasca = tasca::find($id)->update(Request::all());
+        return redirect('tasques/'.$id);
+
+         
     }
 
     /**
@@ -89,5 +120,7 @@ class tareaslista extends Controller
     public function destroy($id)
     {
         //
+        $tasca = tasca::find($id)->delete();
+        return redirect('tasques/');
     }
 }
